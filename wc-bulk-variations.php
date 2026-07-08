@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Bulk Variations
  * Plugin URI: https://github.com/noelpersson/add-varations-woocommerce
  * Description: Bulk create variations for WooCommerce products with background processing
- * Version: 1.0.6
+ * Version: 1.0.7
  * Author: Noel Persson
  * Author URI: https://github.com/noelpersson
  * License: GPL-2.0+
@@ -25,7 +25,7 @@ if (!function_exists('WC')) {
 }
 
 // Define plugin constants
-define('WC_BULK_VARIATIONS_VERSION', '1.0.6');
+define('WC_BULK_VARIATIONS_VERSION', '1.0.7');
 define('WC_BULK_VARIATIONS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WC_BULK_VARIATIONS_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -62,14 +62,14 @@ add_action('plugins_loaded', function () {
 
 /**
  * Add plugin action link to go directly to the plugin's admin page
- * This filter runs for ALL plugins, so we need to check if it's ours
+ * Works regardless of the plugin folder name
  */
-add_filter('plugin_action_links', function ($links, $plugin_file) {
-    // Our plugin file path as it appears in the plugins list
-    $our_plugin_path = plugin_basename(__FILE__);
+add_filter('plugin_action_links', function ($links, $file) {
+    // Get our plugin file path
+    $our_plugin = plugin_basename(__FILE__);
     
-    // Check if this is our plugin
-    if ($plugin_file === $our_plugin_path) {
+    // Check if this is our plugin (compare basenames to handle different folder names)
+    if (basename($file) === basename($our_plugin)) {
         $admin_url = admin_url('admin.php?page=wc-bulk-variations');
         $action_link = '<a href="' . esc_url($admin_url) . '">' . esc_html__('Bulk Variations', 'wc-bulk-variations') . '</a>';
         array_unshift($links, $action_link);
