@@ -1,0 +1,126 @@
+.wc-bulk-variations-container {
+    max-width: 800px;
+    margin: 20px 0;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+}
+
+.wc-bulk-variations-section {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.wc-bulk-variations-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.wc-bulk-variations-field {
+    margin-bottom: 15px;
+}
+
+.wc-bulk-variations-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.wc-bulk-variations-field input[type="text"],
+.wc-bulk-variations-field input[type="radio"] {
+    margin-right: 8px;
+}
+
+.wc-bulk-variations-field .description {
+    color: #666;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.wc-bulk-variations-progress {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.progress-bar {
+    height: 24px;
+    background: #f1f1f1;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: #2271b1;
+    transition: width 0.3s ease;
+}
+
+.wc-bulk-variations-cancel {
+    margin-top: 10px;
+}
+
+#wc-bulk-variations-spinner {
+    vertical-align: middle;
+}
+
+#wc-bulk-variations-results {
+    background: #f0f8ff;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #0073aa;
+}
+
+.wc-bulk-variations-error {
+    color: #d63638;
+    background: #ffebe8;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.wc-bulk-variations-success {
+    color: #4c8a27;
+    background: #e7f5d7;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+/* Select2 styling */
+.wc-enhanced-select {
+    width: 100% !important;
+    min-height: 32px;
+}
+
+.select2-container--default .select2-selection--multiple {
+    min-height: 32px;
+    border: 1px solid #ddd !important;
+    border-radius: 4px;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: #2271b1;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 2px 6px;
+    margin-top: 4px;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: white;
+    margin-right: 4px;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+}
