@@ -2,7 +2,7 @@
 /**
  * WC_Bulk_Variations_Admin class
  * 
- * Handles the admin interface for bulk variations
+ * Handles the admin interface for bulk variations with comprehensive edge case handling
  */
 
 if (!defined('ABSPATH')) {
@@ -36,6 +36,7 @@ class WC_Bulk_Variations_Admin {
         add_action('wp_ajax_wc_bulk_variations_get_progress', array($this, 'handle_get_progress'));
         add_action('wp_ajax_wc_bulk_variations_cancel_process', array($this, 'handle_cancel_process'));
         add_action('wp_ajax_wc_bulk_variations_process_batch', array($this, 'handle_process_batch'));
+        add_action('wp_ajax_wc_bulk_variations_get_summary', array($this, 'handle_get_summary'));
         
         // Admin notices
         add_action('admin_notices', array($this, 'display_admin_notices'));
@@ -99,6 +100,23 @@ class WC_Bulk_Variations_Admin {
                 'values' => __('Values', 'wc-bulk-variations'),
                 'progress' => __('Progress', 'wc-bulk-variations'),
                 'select_placeholder' => __('Select...', 'wc-bulk-variations'),
+                'view_details' => __('View Details', 'wc-bulk-variations'),
+                'hide_details' => __('Hide Details', 'wc-bulk-variations'),
+                'product' => __('Product', 'wc-bulk-variations'),
+                'status' => __('Status', 'wc-bulk-variations'),
+                'message' => __('Message', 'wc-bulk-variations'),
+                'created' => __('Created', 'wc-bulk-variations'),
+                'skipped' => __('Skipped', 'wc-bulk-variations'),
+                'failed' => __('Failed', 'wc-bulk-variations'),
+                'success' => __('Success', 'wc-bulk-variations'),
+                'no_active_processes' => __('No active processes', 'wc-bulk-variations'),
+                'batch_summary' => __('Batch Summary', 'wc-bulk-variations'),
+                'total_products' => __('Total Products', 'wc-bulk-variations'),
+                'total_created' => __('Variations Created', 'wc-bulk-variations'),
+                'total_skipped' => __('Variations Skipped', 'wc-bulk-variations'),
+                'success_rate' => __('Success Rate', 'wc-bulk-variations'),
+                'duration' => __('Duration', 'wc-bulk-variations'),
+                'seconds' => __('seconds', 'wc-bulk-variations'),
             ),
         ));
     }
@@ -193,6 +211,10 @@ class WC_Bulk_Variations_Admin {
         $processor = WC_Bulk_Variations_Plugin::get_instance()->get_background_processor();
         $batch_key = $processor->start_process($product_ids, $attribute_name, $values);
         
+        if (!$batch_key) {
+            wp_send_json_error(array('message' => __('Failed to start process. Please try again.', 'wc-bulk-variations')));
+        }
+        
         wp_send_json_success(array(
             'message' => sprintf(__('Started processing %d products', 'wc-bulk-variations'), count($product_ids)),
             'batch_key' => $batch_key,
@@ -251,6 +273,24 @@ class WC_Bulk_Variations_Admin {
         wp_send_json_success($progress);
     }
     
+    public function handle_get_summary() {
+        check_ajax_referer('wc_bulk_variations_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(array('message' => __('Insufficient permissions', 'wc-bulk-variations')));
+        }
+        
+        $batch_key = isset($_POST['batch_key']) ? sanitize_text_field($_POST['batch_key']) : '';
+        $processor = WC_Bulk_Variations_Plugin::get_instance()->get_background_processor();
+        $summary = $processor->get_batch_summary($batch_key);
+        
+        if ($summary) {
+            wp_send_json_success($summary);
+        } else {
+            wp_send_json_error(array('message' => __('Batch not found', 'wc-bulk-variations')));
+        }
+    }
+    
     private function get_product_ids_from_selection($selection_type, $selected_products, $selected_categories) {
         $product_ids = array();
         
@@ -295,7 +335,8 @@ class WC_Bulk_Variations_Admin {
                 break;
         }
         
-        return array_unique(array_filter($product_ids));
+        // Filter out invalid IDs and duplicates
+        return array_unique(array_filter(array_map('intval', $product_ids)));
     }
     
     public function display_admin_notices() {
@@ -307,9 +348,31 @@ class WC_Bulk_Variations_Admin {
             
             if (!empty($completed)) {
                 foreach ($completed as $batch) {
-                    echo '<div class="notice notice-success is-dismissible">';
-                    echo '<p>' . sprintf(__('Bulk variation process completed! %d products processed.', 'wc-bulk-variations'), $batch['total']) . '</p>';
-                    echo '</div>';
+                    $summary = $processor->get_batch_summary($batch['key']);
+                    if ($summary) {
+                        echo '<div class="notice notice-success is-dismissible">';
+                        echo '<p>' . sprintf(
+                            __('Bulk variation process completed! %d of %d products processed successfully.', 'wc-bulk-variations'),
+                            $summary['processed'],
+                            $summary['total_products']
+                        ) . '</p>';
+                        
+                        if ($summary['total_created'] > 0) {
+                            echo '<p>' . sprintf(
+                                _n('%d variation created.', '%d variations created.', $summary['total_created'], 'wc-bulk-variations'),
+                                $summary['total_created']
+                            ) . '</p>';
+                        }
+                        
+                        if ($summary['total_skipped'] > 0) {
+                            echo '<p>' . sprintf(
+                                _n('%d variation skipped (already existed).', '%d variations skipped (already existed).', $summary['total_skipped'], 'wc-bulk-variations'),
+                                $summary['total_skipped']
+                            ) . '</p>';
+                        }
+                        
+                        echo '</div>';
+                    }
                 }
                 // Clear completed notices
                 $processor->clear_completed_batches();

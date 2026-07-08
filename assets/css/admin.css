@@ -1,5 +1,5 @@
 .wc-bulk-variations-container {
-    max-width: 800px;
+    max-width: 100%;
     margin: 20px 0;
     padding: 20px;
     background: #fff;
@@ -49,6 +49,23 @@
     border-radius: 4px;
 }
 
+.wc-bulk-variations-progress-header {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.wc-bulk-variations-summary {
+    background: #fff;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.wc-bulk-variations-summary p {
+    margin: 5px 0;
+}
+
 .progress-bar {
     height: 24px;
     background: #f1f1f1;
@@ -94,6 +111,45 @@
     margin: 10px 0;
 }
 
+.wc-bulk-variations-active-processes {
+    margin-bottom: 20px;
+}
+
+.wc-bulk-variations-active-processes h2 {
+    margin-bottom: 15px;
+}
+
+.wc-bulk-variations-details {
+    margin-top: 15px;
+}
+
+.wc-bulk-variations-details-content {
+    overflow-x: auto;
+}
+
+.wc-bulk-variations-details-content table {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.wc-bulk-variations-details-content th,
+.wc-bulk-variations-details-content td {
+    padding: 8px 10px;
+    text-align: left;
+}
+
+.wc-bulk-variations-details-content tr.success {
+    background-color: #f0f8ff;
+}
+
+.wc-bulk-variations-details-content tr.failed {
+    background-color: #ffebe8;
+}
+
+.wc-bulk-variations-toggle-details {
+    margin-right: 10px;
+}
+
 /* Select2 styling */
 .wc-enhanced-select {
     width: 100% !important;
@@ -123,4 +179,19 @@
 .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
     background: rgba(255,255,255,0.2);
     border-radius: 2px;
+}
+
+/* Responsive */
+@media (max-width: 782px) {
+    .wc-bulk-variations-container {
+        padding: 10px;
+    }
+    
+    .wc-bulk-variations-section {
+        padding-bottom: 10px;
+    }
+    
+    .wc-bulk-variations-progress {
+        padding: 10px;
+    }
 }

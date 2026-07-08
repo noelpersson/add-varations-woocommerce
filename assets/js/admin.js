@@ -7,12 +7,14 @@ jQuery(function($) {
         processed_count: 0,
         check_interval: null,
         is_processing: false,
+        active_batches: {},
         
         init: function() {
             this.setup_toggle_fields();
             this.setup_form_submission();
             this.setup_cancel_buttons();
             this.setup_select2();
+            this.setup_details_toggle();
             this.check_existing_progress();
         },
         
@@ -80,6 +82,7 @@ jQuery(function($) {
                             self.batch_key = response.data.batch_key;
                             self.total_products = response.data.total_products;
                             self.processed_count = 0;
+                            self.active_batches[self.batch_key] = true;
                             
                             // Show results container
                             $('#wc-bulk-variations-results').show();
@@ -122,10 +125,7 @@ jQuery(function($) {
                             if (response.success) {
                                 // Stop processing
                                 self.is_processing = false;
-                                if (self.check_interval) {
-                                    clearInterval(self.check_interval);
-                                    self.check_interval = null;
-                                }
+                                delete self.active_batches[batch_key];
                                 
                                 // Update UI
                                 $('.wc-bulk-variations-progress[data-batch-key="' + batch_key + '"] .progress-bar-fill').css('width', '100%');
@@ -149,6 +149,24 @@ jQuery(function($) {
             });
         },
         
+        setup_details_toggle: function() {
+            var self = this;
+            
+            $(document).on('click', '.wc-bulk-variations-toggle-details', function() {
+                var batch_key = $(this).data('batch-key');
+                var content = $('.wc-bulk-variations-details-content[data-batch-key="' + batch_key + '"]');
+                var button = $(this);
+                
+                if (content.is(':visible')) {
+                    content.hide();
+                    button.text(wc_bulk_variations_admin.strings.view_details);
+                } else {
+                    content.show();
+                    button.text(wc_bulk_variations_admin.strings.hide_details);
+                }
+            });
+        },
+        
         check_existing_progress: function() {
             var self = this;
             
@@ -166,6 +184,7 @@ jQuery(function($) {
                         for (var batch_key in progress) {
                             if (progress.hasOwnProperty(batch_key)) {
                                 self.batch_key = batch_key;
+                                self.active_batches[batch_key] = true;
                                 self.update_progress_ui(progress[batch_key]);
                                 
                                 // If still processing, continue
@@ -183,7 +202,16 @@ jQuery(function($) {
         process_next_batch: function() {
             var self = this;
             
-            if (!self.batch_key || !self.is_processing) {
+            // Find first active batch
+            var active_batch_key = null;
+            for (var batch_key in self.active_batches) {
+                if (self.active_batches.hasOwnProperty(batch_key)) {
+                    active_batch_key = batch_key;
+                    break;
+                }
+            }
+            
+            if (!active_batch_key || !self.is_processing) {
                 return;
             }
             
@@ -193,7 +221,7 @@ jQuery(function($) {
                 data: {
                     action: 'wc_bulk_variations_process_batch',
                     nonce: wc_bulk_variations_admin.nonce,
-                    batch_key: self.batch_key
+                    batch_key: active_batch_key
                 },
                 success: function(response) {
                     if (response.success && response.data) {
@@ -201,9 +229,27 @@ jQuery(function($) {
                         
                         // Check if process is complete
                         if (response.data.status === 'completed' || response.data.status === 'cancelled') {
-                            self.is_processing = false;
-                            $('#wc-bulk-variations-spinner').hide();
-                            $('#wc-bulk-variations-submit').prop('disabled', false);
+                            delete self.active_batches[active_batch_key];
+                            
+                            // Check if there are more active batches
+                            var has_active = false;
+                            for (var key in self.active_batches) {
+                                if (self.active_batches.hasOwnProperty(key)) {
+                                    has_active = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (!has_active) {
+                                self.is_processing = false;
+                                $('#wc-bulk-variations-spinner').hide();
+                                $('#wc-bulk-variations-submit').prop('disabled', false);
+                            } else {
+                                // Process next batch
+                                setTimeout(function() {
+                                    self.process_next_batch();
+                                }, 100);
+                            }
                         } else {
                             // Continue processing next batch
                             setTimeout(function() {
@@ -213,6 +259,7 @@ jQuery(function($) {
                     } else {
                         // Error occurred, stop processing
                         self.is_processing = false;
+                        delete self.active_batches[active_batch_key];
                         $('#wc-bulk-variations-spinner').hide();
                         $('#wc-bulk-variations-submit').prop('disabled', false);
                         if (response.data && response.data.message) {
@@ -222,6 +269,7 @@ jQuery(function($) {
                 },
                 error: function(xhr, status, error) {
                     self.is_processing = false;
+                    delete self.active_batches[active_batch_key];
                     $('#wc-bulk-variations-spinner').hide();
                     $('#wc-bulk-variations-submit').prop('disabled', false);
                     self.show_error(wc_bulk_variations_admin.strings.error + ': ' + error);
@@ -242,12 +290,23 @@ jQuery(function($) {
             if (progress_container.length === 0) {
                 // Create new progress container
                 var html = '<div class="wc-bulk-variations-progress" data-batch-key="' + progress.key + '">';
+                html += '<div class="wc-bulk-variations-progress-header">';
                 html += '<h3>' + wc_bulk_variations_admin.strings.processing + '</h3>';
-                html += '<p>' + wc_bulk_variations_admin.strings.attribute + ': <strong>' + progress.attribute_name + '</strong></p>';
-                html += '<p>' + wc_bulk_variations_admin.strings.values + ': <strong>' + progress.attribute_values.join(', ') + '</strong></p>';
+                html += '<div class="wc-bulk-variations-summary"></div>';
+                html += '</div>';
+                html += '<div class="wc-bulk-variations-progress-bar-container">';
                 html += '<p>' + wc_bulk_variations_admin.strings.progress + ': <span class="processed-count">0</span> of <span class="total-count">' + progress.total + '</span> products (<span class="percentage">0%</span>)</p>';
                 html += '<div class="progress-bar"><div class="progress-bar-fill" style="width: 0%;"></div></div>';
                 html += '<p><strong class="status-text">' + wc_bulk_variations_admin.strings.processing + '</strong></p>';
+                html += '</div>';
+                html += '<div class="wc-bulk-variations-details">';
+                html += '<button class="button button-secondary wc-bulk-variations-toggle-details" data-batch-key="' + progress.key + '">';
+                html += wc_bulk_variations_admin.strings.view_details + '</button>';
+                html += '<div class="wc-bulk-variations-details-content" data-batch-key="' + progress.key + '" style="display: none; margin-top: 10px;">';
+                html += '<table class="wp-list-table widefat fixed striped">';
+                html += '<thead><tr><th>' + wc_bulk_variations_admin.strings.product + '</th><th>' + wc_bulk_variations_admin.strings.status + '</th><th>' + wc_bulk_variations_admin.strings.message + '</th><th>' + wc_bulk_variations_admin.strings.created + '</th><th>' + wc_bulk_variations_admin.strings.skipped + '</th></tr></thead>';
+                html += '<tbody></tbody></table>';
+                html += '</div></div>';
                 
                 if (progress.status === 'processing' || progress.status === 'queued') {
                     html += '<button class="button button-secondary wc-bulk-variations-cancel" data-batch-key="' + progress.key + '">';
@@ -256,7 +315,7 @@ jQuery(function($) {
                 
                 html += '</div>';
                 
-                $('#wc-bulk-variations-progress-container').html(html);
+                $('#wc-bulk-variations-progress-container').append(html);
                 progress_container = $('.wc-bulk-variations-progress[data-batch-key="' + progress.key + '"]');
             }
             
@@ -268,7 +327,9 @@ jQuery(function($) {
             
             // Update status text
             var status_text = wc_bulk_variations_admin.strings.processing;
-            if (progress.status === 'completed') {
+            if (progress.status === 'queued') {
+                status_text = wc_bulk_variations_admin.strings.queued || wc_bulk_variations_admin.strings.processing;
+            } else if (progress.status === 'completed') {
                 status_text = wc_bulk_variations_admin.strings.completed;
             } else if (progress.status === 'cancelled') {
                 status_text = wc_bulk_variations_admin.strings.cancelled;
@@ -278,6 +339,65 @@ jQuery(function($) {
             // Hide cancel button if not processing or queued
             if (progress.status !== 'processing' && progress.status !== 'queued') {
                 progress_container.find('.wc-bulk-variations-cancel').hide();
+            }
+            
+            // Update summary if available
+            if (progress.items && progress.items.length > 0) {
+                var total_created = 0;
+                var total_skipped = 0;
+                var total_failed = 0;
+                
+                for (var i = 0; i < progress.items.length; i++) {
+                    var item = progress.items[i];
+                    total_created += item.created || 0;
+                    total_skipped += item.skipped || 0;
+                    if (item.status === 'failed') {
+                        total_failed++;
+                    }
+                }
+                
+                var success_rate = progress.total > 0 ? ((progress.processed / progress.total) * 100).toFixed(1) : 0;
+                
+                var summary_html = '';
+                summary_html += '<p><strong>' + wc_bulk_variations_admin.strings.attribute + ':</strong> ' + progress.attribute_name + '</p>';
+                summary_html += '<p><strong>' + wc_bulk_variations_admin.strings.values + ':</strong> ' + progress.attribute_values.join(', ') + '</p>';
+                summary_html += '<p><strong>' + wc_bulk_variations_admin.strings.total_products + ':</strong> ' + progress.total + '</p>';
+                summary_html += '<p><strong>' + wc_bulk_variations_admin.strings.processed + ':</strong> ' + progress.processed + '</p>';
+                
+                if (total_failed > 0) {
+                    summary_html += '<p class="wc-bulk-variations-error"><strong>' + wc_bulk_variations_admin.strings.failed + ':</strong> ' + total_failed + '</p>';
+                }
+                
+                if (total_created > 0) {
+                    summary_html += '<p><strong>' + wc_bulk_variations_admin.strings.total_created + ':</strong> ' + total_created + '</p>';
+                }
+                
+                if (total_skipped > 0) {
+                    summary_html += '<p><strong>' + wc_bulk_variations_admin.strings.total_skipped + ':</strong> ' + total_skipped + '</p>';
+                }
+                
+                summary_html += '<p><strong>' + wc_bulk_variations_admin.strings.success_rate + ':</strong> ' + success_rate + '%</p>';
+                
+                progress_container.find('.wc-bulk-variations-summary').html(summary_html);
+            }
+            
+            // Update details table
+            if (progress.items && progress.items.length > 0) {
+                var tbody = progress_container.find('.wc-bulk-variations-details-content tbody');
+                tbody.empty();
+                
+                for (var i = 0; i < progress.items.length; i++) {
+                    var item = progress.items[i];
+                    var status_class = item.status === 'success' ? 'success' : 'failed';
+                    var row = '<tr class="' + status_class + '">';
+                    row += '<td>#' + item.product_id + '</td>';
+                    row += '<td>' + (item.status === 'success' ? wc_bulk_variations_admin.strings.success : wc_bulk_variations_admin.strings.failed) + '</td>';
+                    row += '<td>' + item.message + '</td>';
+                    row += '<td>' + (item.created || 0) + '</td>';
+                    row += '<td>' + (item.skipped || 0) + '</td>';
+                    row += '</tr>';
+                    tbody.append(row);
+                }
             }
         },
         
