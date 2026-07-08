@@ -81,11 +81,22 @@ final class WC_Bulk_Variations_Plugin {
         // Load text domain
         add_action('init', array($this, 'load_textdomain'));
         
+        // Initialize admin early for menu registration
+        if (is_admin()) {
+            add_action('admin_menu', array($this, 'init_admin_early'));
+        }
+        
         // Initialize components
         add_action('init', array($this, 'init_components'));
         
         // Add custom cron interval
         add_filter('cron_schedules', array($this, 'add_cron_interval'));
+    }
+    
+    public function init_admin_early() {
+        if (is_null($this->admin)) {
+            $this->admin = WC_Bulk_Variations_Admin::get_instance();
+        }
     }
     
     public function add_cron_interval($schedules) {
@@ -106,7 +117,10 @@ final class WC_Bulk_Variations_Plugin {
     
     public function init_components() {
         if (is_admin()) {
-            $this->admin = WC_Bulk_Variations_Admin::get_instance();
+            // Admin is already initialized in init_admin_early for menu registration
+            if (is_null($this->admin)) {
+                $this->admin = WC_Bulk_Variations_Admin::get_instance();
+            }
         }
         
         // Use simple background processor by default

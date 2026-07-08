@@ -1,0 +1,210 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WooCommerce Bulk Variations 1.0.0\n"
+"POT-Creation-Date: 2024-01-01 00:00+0000\n"
+"PO-Revision-Date: 2024-07-09 00:00+0200\n"
+"Last-Translator: Vibe Code <vibe@mistral.ai>\n"
+"Language-Team: Swedish <sv@li.org>\n"
+"Language: sv_SE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: wc-bulk-variations.php
+msgid "Bulk create variations for WooCommerce products with background processing"
+msgstr "Skapa variationer i bulk för WooCommerce-produkter med bakgrundsbehandling"
+
+#: wc-bulk-variations.php
+msgid "WooCommerce Bulk Variations"
+msgstr "WooCommerce Bulk Variationer"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Bulk Variations"
+msgstr "Bulk Variationer"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Insufficient permissions"
+msgstr "Otillräckliga behörigheter"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Please enter an attribute name."
+msgstr "Ange ett attributnamn."
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Please enter at least one attribute value."
+msgstr "Ange minst ett attributvärde."
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "No products found matching your criteria."
+msgstr "Inga produkter hittades som matchar dina kriterier."
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Started processing %d products"
+msgstr "Började bearbeta %d produkter"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Process cancelled"
+msgstr "Processen avbröts"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Failed to cancel process"
+msgstr "Misslyckades med att avbryta processen"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Bulk variation process completed! %d products processed."
+msgstr "Bulkvariationsprocessen slutförd! %d produkter bearbetade."
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "All products"
+msgstr "Alla produkter"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Products in selected categories"
+msgstr "Produkter i valda kategorier"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Specific products"
+msgstr "Specifika produkter"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Select Categories:"
+msgstr "Välj kategorier:"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Select one or more categories. All products in these categories will be processed."
+msgstr "Välj en eller flera kategorier. Alla produkter i dessa kategorier kommer att bearbetas."
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Select Products:"
+msgstr "Välj produkter:"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Select one or more products. Only selected products will be processed."
+msgstr "Välj en eller flera produkter. Endast valda produkter kommer att bearbetas."
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Step 1: Select Products"
+msgstr "Steg 1: Välj produkter"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Step 2: Define Attribute and Variations"
+msgstr "Steg 2: Definiera attribut och variationer"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Step 3: Run Process"
+msgstr "Steg 3: Kör processen"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Attribute Name:"
+msgstr "Attributnamn:"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "e.g. Size, Color, Material"
+msgstr "t.ex. Storlek, Färg, Material"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Enter the name of the attribute (e.g., \"Size\" or \"Color\"). This will be created as a product attribute."
+msgstr "Ange attributets namn (t.ex. \"Storlek\" eller \"Färg\"). Detta kommer att skapas som ett produktattribut."
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Attribute Values (Variations):"
+msgstr "Attributvärden (Variationer):"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "e.g. Small, Medium, Large or Red, Blue, Green"
+msgstr "t.ex. Liten, Medium, Stor eller Röd, Blå, Grön"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Enter the variation values separated by commas. Each value will create a separate variation."
+msgstr "Ange variationsvärdena separerade med kommatecken. Varje värde kommer att skapa en separat variation."
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Click the button below to start creating variations for the selected products. This process will run in the background."
+msgstr "Klicka på knappen nedan för att börja skapa variationer för de valda produkterna. Denna process kommer att köra i bakgrunden."
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Start Bulk Variation Creation"
+msgstr "Starta skapande av bulkvariationer"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Processing Results"
+msgstr "Bearbetningsresultat"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Processing Status"
+msgstr "Bearbetningsstatus"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Attribute: %s"
+msgstr "Attribut: %s"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Values: %s"
+msgstr "Värden: %s"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Progress: %d of %d products (%s%%)"
+msgstr "Framsteg: %d av %d produkter (%s%%)"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Processing..."
+msgstr "Bearbetar..."
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Completed!"
+msgstr "Slutfört!"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Cancelled"
+msgstr "Avbruten"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Cancel Process"
+msgstr "Avbryt process"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Are you sure you want to cancel the process?"
+msgstr "Är du säker på att du vill avbryta processen?"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Please select at least one product or category."
+msgstr "Välj minst en produkt eller kategori."
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Please enter an attribute name."
+msgstr "Ange ett attributnamn."
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Please enter at least one attribute value."
+msgstr "Ange minst ett attributvärde."
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Error occurred"
+msgstr "Ett fel uppstod"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Cancel"
+msgstr "Avbryt"
+
+#: includes/class-wc-bulk-variations-admin.php
+msgid "Select..."
+msgstr "Välj..."
+
+#: includes/class-wc-bulk-variations-handler.php
+msgid "Product #%d not found"
+msgstr "Produkt #%d hittades inte"
+
+#: includes/class-wc-bulk-variations-handler.php
+msgid "%d variation created, %d skipped (already existed)"
+msgid_plural "%d variations created, %d skipped (already existed)"
+msgstr[0] "%d variation skapad, %d hoppade över (existerade redan)"
+msgstr[1] "%d variationer skapade, %d hoppade över (existerade redan)"
+
+#: includes/class-wc-bulk-variations-handler.php
+msgid "Error: %s"
+msgstr "Fel: %s"
+
+#: wc-bulk-variations.php
+msgid "WooCommerce Bulk Variations Interval"
+msgstr "WooCommerce Bulk Variations Intervall"
