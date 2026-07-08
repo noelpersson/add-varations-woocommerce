@@ -1,6 +1,37 @@
 jQuery(function($) {
     'use strict';
 
+        /**
+         * Parse server error to get meaningful error message
+         */
+        parse_server_error: function(xhr, status, error) {
+            // Try to get error message from JSON response
+            if (xhr.responseText) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.data && response.data.message) {
+                        return response.data.message;
+                    }
+                    if (response.message) {
+                        return response.message;
+                    }
+                } catch (e) {
+                    // Not JSON, try to extract from HTML
+                }
+            }
+            
+            // Try to extract error from HTML
+            if (xhr.responseText && xhr.responseText.indexOf("<p>") !== -1) {
+                var htmlError = xhr.responseText.match(/<p[^>]*>([\s\S]*?)<\/p>/);
+                if (htmlError && htmlError[1]) {
+                    return htmlError[1].trim();
+                }
+            }
+            
+            // Fallback to status and error
+            return status + ": " + error;
+        },
+
     var wc_bulk_variations = {
         batch_key: null,
         total_products: 0,

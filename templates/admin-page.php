@@ -9,7 +9,7 @@
         echo '<div class="wc-bulk-variations-active-processes">';
         echo '<h2>' . esc_html__('Active Processes', 'wc-bulk-variations') . '</h2>';
         foreach ($active_progress as $batch_key => $progress) {
-            $this->display_progress_bar($progress, $batch_key);
+            wc_bulk_variations_display_progress_bar($progress, $batch_key);
         }
         echo '</div>';
     }
@@ -98,8 +98,14 @@
 </div>
 
 <?php
-// Helper method to display progress bar
-function display_progress_bar($progress, $batch_key) {
+
+/**
+ * Display progress bar for a batch process
+ * 
+ * @param array $progress Progress data
+ * @param string $batch_key Batch key
+ */
+function wc_bulk_variations_display_progress_bar($progress, $batch_key) {
     $percentage = 0;
     if ($progress['total'] > 0) {
         $percentage = min(100, ($progress['processed'] / $progress['total']) * 100);
@@ -154,71 +160,23 @@ function display_progress_bar($progress, $batch_key) {
             echo '<p><strong>' . esc_html__('Variations Skipped:', 'wc-bulk-variations') . '</strong> ' . esc_html($summary['total_skipped']) . '</p>';
         }
         
-        if ($summary['success_rate'] > 0) {
-            echo '<p><strong>' . esc_html__('Success Rate:', 'wc-bulk-variations') . '</strong> ' . number_format($summary['success_rate'], 1) . '%</p>';
-        }
-        
-        if ($summary['duration'] > 0) {
-            echo '<p><strong>' . esc_html__('Duration:', 'wc-bulk-variations') . '</strong> ' . esc_html($summary['duration']) . ' ' . esc_html__('seconds', 'wc-bulk-variations') . '</p>';
-        }
-        
         echo '</div>';
     }
     
-    echo '</div>';
-    
     echo '<div class="wc-bulk-variations-progress-bar-container">';
-    echo '<p>' . sprintf(
+    echo '<div class="wc-bulk-variations-progress-bar" style="width: ' . esc_attr($percentage) . '%;"></div>';
+    echo '</div>';
+    echo '<p class="wc-bulk-variations-progress-text">' . sprintf(
         esc_html__('Progress: %d of %d products (%s%%)', 'wc-bulk-variations'),
-        $progress['processed'],
-        $progress['total'],
-        number_format($percentage, 1)
+        esc_html($progress['processed']),
+        esc_html($progress['total']),
+        esc_html(number_format($percentage, 0))
     ) . '</p>';
-    echo '<div class="progress-bar">';
-    echo '<div class="progress-bar-fill" style="width: ' . esc_attr($percentage) . '%;"></div>';
-    echo '</div>';
-    echo '<p><strong class="status-text">' . esc_html($status_text) . '</strong></p>';
-    echo '</div>';
+    echo '<p class="wc-bulk-variations-status">' . esc_html($status_text) . '</p>';
     
-    // Show details toggle
-    echo '<div class="wc-bulk-variations-details">';
-    echo '<button class="button button-secondary wc-bulk-variations-toggle-details" data-batch-key="' . esc_attr($batch_key) . '">';
-    echo esc_html__('View Details', 'wc-bulk-variations');
-    echo '</button>';
-    echo '<div class="wc-bulk-variations-details-content" data-batch-key="' . esc_attr($batch_key) . '" style="display: none; margin-top: 10px;">';
-    echo '<table class="wp-list-table widefat fixed striped">';
-    echo '<thead><tr>';
-    echo '<th>' . esc_html__('Product', 'wc-bulk-variations') . '</th>';
-    echo '<th>' . esc_html__('Status', 'wc-bulk-variations') . '</th>';
-    echo '<th>' . esc_html__('Message', 'wc-bulk-variations') . '</th>';
-    echo '<th>' . esc_html__('Created', 'wc-bulk-variations') . '</th>';
-    echo '<th>' . esc_html__('Skipped', 'wc-bulk-variations') . '</th>';
-    echo '</tr></thead>';
-    echo '<tbody>';
-    
-    if (!empty($progress['items'])) {
-        foreach ($progress['items'] as $item) {
-            $status_class = $item['status'] === 'success' ? 'success' : 'failed';
-            echo '<tr class="' . esc_attr($status_class) . '">';
-            echo '<td>' . esc_html(get_the_title($item['product_id'])) . ' (#' . esc_html($item['product_id']) . ')</td>';
-            echo '<td>' . esc_html(ucfirst($item['status'])) . '</td>';
-            echo '<td>' . esc_html($item['message']) . '</td>';
-            echo '<td>' . esc_html(isset($item['created']) ? $item['created'] : 0) . '</td>';
-            echo '<td>' . esc_html(isset($item['skipped']) ? $item['skipped'] : 0) . '</td>';
-            echo '</tr>';
-        }
-    } else {
-        echo '<tr><td colspan="5">' . esc_html__('No details available', 'wc-bulk-variations') . '</td></tr>';
-    }
-    
-    echo '</tbody></table>';
-    echo '</div>';
-    echo '</div>';
-    
+    // Add cancel button for active processes
     if ($progress['status'] === 'processing' || $progress['status'] === 'queued') {
-        echo '<button class="button button-secondary wc-bulk-variations-cancel" data-batch-key="' . esc_attr($batch_key) . '">';
-        echo esc_html__('Cancel Process', 'wc-bulk-variations');
-        echo '</button>';
+        echo '<button class="button button-secondary wc-bulk-variations-cancel" data-batch-key="' . esc_attr($batch_key) . '">' . esc_html__('Cancel Process', 'wc-bulk-variations') . '</button>';
     }
     
     echo '</div>';

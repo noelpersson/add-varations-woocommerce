@@ -102,7 +102,7 @@ class WC_Bulk_Variations_Handler {
     private function handle_product_type($product, $attribute_name, $attribute_values) {
         $product_type = $product->get_type();
         
-        // Handle simple products
+        // Handle simple products - convert to variable
         if ($product_type === 'simple') {
             return $this->convert_to_variable($product);
         }
@@ -147,7 +147,7 @@ class WC_Bulk_Variations_Handler {
     }
     
     /**
-     * Convert simple product to variable
+     * Convert simple product to variable using correct WooCommerce API
      * 
      * @param WC_Product $product
      * @return array
@@ -163,8 +163,11 @@ class WC_Bulk_Variations_Handler {
         $original_stock_status = $product->get_stock_status();
         
         try {
-            // Convert to variable
-            $product->set_type('variable');
+            // Use wp_set_object_terms to change product type (correct WooCommerce API)
+            wp_set_object_terms($product_id, 'variable', 'product_type');
+            
+            // Reload as variable product
+            $product = wc_get_product($product_id);
             
             // Preserve original data as default for variations
             $product->set_regular_price($original_price);
@@ -336,8 +339,6 @@ class WC_Bulk_Variations_Handler {
             $variation->set_width($product->get_width() ? $product->get_width() : '');
             $variation->set_height($product->get_height() ? $product->get_height() : '');
             $variation->set_tax_class($product->get_tax_class());
-            $variation->set_tax_status($product->get_tax_status());
-            $variation->set_shipping_class($product->get_shipping_class());
             $variation->set_shipping_class_id($product->get_shipping_class_id());
             
             // Set SKU if parent has one
@@ -352,102 +353,33 @@ class WC_Bulk_Variations_Handler {
                 $variation->set_image_id($parent_image_id);
             }
             
-            $variation_id = $variation->save();
+            // Save the variation
+            $variation->save();
             
-            if ($variation_id) {
-                $created_count++;
-                
-                // Update variation meta for compatibility
-                update_post_meta($variation_id, '_price', $parent_price);
-                update_post_meta($variation_id, '_regular_price', $parent_regular_price);
-                if ($parent_sale_price) {
-                    update_post_meta($variation_id, '_sale_price', $parent_sale_price);
-                }
-                
-                $this->log_message(sprintf('Created variation #%d for product #%d with %s=%s', $variation_id, $product_id, $attribute_key, $value_slug));
-            } else {
-                $this->log_error(sprintf('Failed to create variation for product #%d with %s=%s', $product_id, $attribute_key, $value_slug));
-            }
+            $created_count++;
+            $this->log_message(sprintf('Created variation with %s=%s for product #%d', $attribute_key, $value_slug, $product_id));
         }
         
-        $message = $this->get_variation_message($created_count, $skipped_count, $updated_count);
+        if ($created_count > 0) {
+            $message = sprintf(
+                _n('%d variation created, %d skipped (already existed)', '%d variations created, %d skipped (already existed)', $created_count, 'wc-bulk-variations'),
+                $created_count,
+                $skipped_count
+            );
+        } else {
+            $message = sprintf(__('%d variations skipped (already existed)', 'wc-bulk-variations'), $skipped_count);
+        }
         
         return array(
             'success' => true,
             'message' => $message,
             'created' => $created_count,
             'skipped' => $skipped_count,
-            'updated' => $updated_count,
         );
     }
     
     /**
-     * Get variation message based on counts
-     * 
-     * @param int $created
-     * @param int $skipped
-     * @param int $updated
-     * @return string
-     */
-    private function get_variation_message($created, $skipped, $updated) {
-        $parts = array();
-        
-        if ($created > 0) {
-            $parts[] = sprintf(_n('%d variation created', '%d variations created', $created, 'wc-bulk-variations'), $created);
-        }
-        
-        if ($skipped > 0) {
-            $parts[] = sprintf(_n('%d skipped', '%d skipped', $skipped, 'wc-bulk-variations'), $skipped);
-        }
-        
-        if ($updated > 0) {
-            $parts[] = sprintf(_n('%d updated', '%d updated', $updated, 'wc-bulk-variations'), $updated);
-        }
-        
-        if (empty($parts)) {
-            return __('No changes made', 'wc-bulk-variations');
-        }
-        
-        return implode(', ', $parts);
-    }
-    
-    /**
-     * Get variation by attributes
-     * 
-     * @param int $product_id
-     * @param array $attributes
-     * @return WC_Product_Variation|null
-     */
-    private function get_variation_by_attributes($product_id, $attributes) {
-        $args = array(
-            'post_type' => 'product_variation',
-            'post_parent' => $product_id,
-            'posts_per_page' => -1,
-            'post_status' => array('publish', 'private', 'draft'),
-            'meta_query' => array(),
-        );
-        
-        foreach ($attributes as $key => $value) {
-            $args['meta_query'][] = array(
-                'key' => 'attribute_' . $key,
-                'value' => $value,
-                'compare' => '='
-            );
-        }
-        
-        $query = new WP_Query($args);
-        
-        if ($query->have_posts()) {
-            $variation_id = $query->post->ID;
-            return wc_get_product($variation_id);
-        }
-        
-        wp_reset_postdata();
-        return null;
-    }
-    
-    /**
-     * Log message
+     * Log a message
      * 
      * @param string $message
      */
@@ -459,7 +391,7 @@ class WC_Bulk_Variations_Handler {
     }
     
     /**
-     * Log error
+     * Log an error
      * 
      * @param string $message
      */

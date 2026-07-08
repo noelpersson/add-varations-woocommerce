@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Bulk Variations
  * Plugin URI: https://github.com/noelpersson/add-varations-woocommerce
  * Description: Bulk create variations for WooCommerce products with background processing
- * Version: 1.0.7
+ * Version: 1.1.0
  * Author: Noel Persson
  * Author URI: https://github.com/noelpersson
  * License: GPL-2.0+
@@ -19,43 +19,20 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Check if WooCommerce is active
-if (!function_exists('WC')) {
-    return;
-}
+// Load class files explicitly (replaces autoloader for reliability)
+require_once WC_BULK_VARIATIONS_PLUGIN_DIR . 'includes/class-wc-bulk-variations-admin.php';
+require_once WC_BULK_VARIATIONS_PLUGIN_DIR . 'includes/class-wc-bulk-variations-handler.php';
+require_once WC_BULK_VARIATIONS_PLUGIN_DIR . 'includes/class-wc-bulk-variations-simple-background.php';
 
 // Define plugin constants
-define('WC_BULK_VARIATIONS_VERSION', '1.0.7');
+define('WC_BULK_VARIATIONS_VERSION', '1.1.0');
 define('WC_BULK_VARIATIONS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WC_BULK_VARIATIONS_PLUGIN_URL', plugin_dir_url(__FILE__));
-
-// Autoload classes
-spl_autoload_register(function ($class) {
-    $prefix = 'WC_Bulk_Variations_';
-    $base_dir = WC_BULK_VARIATIONS_PLUGIN_DIR . 'includes/';
-
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        return;
-    }
-
-    $relative_class = substr($class, $len);
-    $file = $base_dir . str_replace('_', '-', strtolower($relative_class)) . '.php';
-
-    if (file_exists($file)) {
-        require $file;
-    }
-});
 
 // Uninstall hook
 register_uninstall_hook(__FILE__, array('WC_Bulk_Variations_Plugin', 'uninstall'));
 
-// Initialize the plugin - use admin_menu hook directly for early registration
-add_action('admin_menu', function () {
-    WC_Bulk_Variations_Plugin::get_instance();
-});
-
-// Also initialize on plugins_loaded for non-admin functionality
+// Initialize the plugin on plugins_loaded (WooCommerce is always loaded by then)
 add_action('plugins_loaded', function () {
     WC_Bulk_Variations_Plugin::get_instance();
 });
@@ -103,12 +80,7 @@ final class WC_Bulk_Variations_Plugin {
         // Load text domain
         add_action('init', array($this, 'load_textdomain'));
         
-        // Initialize admin class immediately if in admin
-        if (is_admin() && is_null($this->admin)) {
-            $this->admin = WC_Bulk_Variations_Admin::get_instance();
-        }
-        
-        // Initialize components
+        // Initialize components on init (when is_admin() is reliable)
         add_action('init', array($this, 'init_components'));
         
         // Add custom cron interval
@@ -132,7 +104,7 @@ final class WC_Bulk_Variations_Plugin {
     }
     
     public function init_components() {
-        if (is_admin() && is_null($this->admin)) {
+        if (is_admin()) {
             $this->admin = WC_Bulk_Variations_Admin::get_instance();
         }
         
